@@ -1,0 +1,32 @@
+<md-toolbar>
+    <div class="md-toolbar-tools">
+        <md-button aria-label="Go Back" href="#/tupper/">Go Back</md-button>
+        <h1>
+            <span>Options</span>
+        </h1>
+        <span flex></span>
+        <md-button aria-label="Save" ng-click="saveOptions()" value="Submit">
+            <md-icon md-svg-src="img/icons/ic_save_black_24px.svg"
+                     aria-label="Save Icon">
+            </md-icon>
+            Save
+        </md-button>
+
+    </div>
+</md-toolbar>
+<div class="inset">
+    <form name="options">
+        <div layout-gt-sm="row">
+            <md-chips ng-model="foodGroups"
+                      placeholder="Enter a foodGroup"
+                      secondary-placeholder="+ food-group"></md-chips>
+        </div>
+        <style>
+            body[dir=rtl] .hint {
+                right: 2px;
+                left: auto;
+            }
+        </style>
+
+    </form>
+</div>

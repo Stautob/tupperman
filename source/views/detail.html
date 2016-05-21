@@ -1,0 +1,82 @@
+<md-toolbar>
+    <div class="md-toolbar-tools">
+        <md-button aria-label="Go Back" href="#/tupper/">Go Back</md-button>
+        <h1>
+            <span>{{tupper.name}}</span>
+        </h1>
+        <span flex></span>
+        <md-button aria-label="Save" ng-click="submitNew()" value="Submit">
+            <md-icon md-svg-src="img/icons/ic_save_black_24px.svg"
+                     aria-label="Save Icon">
+            </md-icon>
+            Save
+        </md-button>
+        <md-menu md-offset="0 -7">
+            <md-button class="md-icon-button" aria-label="Settings" ng-click="$mdOpenMenu($event)">
+                <md-icon md-svg-src="img/icons/ic_menu_black_24px.svg" aria-label="Menu Icon"></md-icon>
+            </md-button>
+            <md-menu-content width="6">
+                <md-menu-item>
+                    <md-button ng-click="createDuplicate()"><span md-menu-align-target="">Create duplicate</span>
+                    </md-button>
+                </md-menu-item>
+                <md-menu-item>
+                    <md-button aria-label="Options" ng-click="openOptions()"><span md-menu-align-target="">Options</span>
+                    </md-button>
+                </md-menu-item>
+            </md-menu-content>
+        </md-menu>
+    </div>
+</md-toolbar>
+<div class="inset">
+    <form name="addTupper">
+        <div layout-gt-sm="row">
+            <label ng-bind="tupper.id"></label>
+        </div>
+
+        <div layout-gt-sm="row">
+            <md-input-container class="md-block" flex-gt-sm>
+                <label>Tupper Name</label>
+                <input title="name" required name="name" ng-model="tupper.name"/>
+            </md-input-container>
+
+            <div flex="5" hide-xs hide-sm></div>
+
+            <md-input-container class="md-block" flex-gt-sm>
+                <label>Description</label>
+                <textarea ng-model="tupper.description" rows="8" md-select-on-focus></textarea>
+                <div class="hint" ng-if="showHints">Describe, what
+                    's inside the Tupper
+                </div>
+            </md-input-container>
+        </div>
+
+        <div layout-gt-sm="row">
+            <md-input-container class="md-block" flex-gt-sm>
+                <label>Food Group</label>
+                <md-select ng-model="tupper.foodGroup">
+                    <md-option ng-repeat="foodGroup in foodGroups" value="{{foodGroup}}">
+                        {{foodGroup}}
+                    </md-option>
+                </md-select>
+            </md-input-container>
+
+            <div flex="5" hide-xs hide-sm></div>
+
+            <md-datepicker ng-model="tupper.dateOfFreeze" md-placeholder="Enter date" flex-gt-sm></md-datepicker>
+        </div>
+
+
+        <style>
+            /*
+             * The Material demos system does not currently allow targeting the body element, so this
+             * must go here in the HTML.
+             */
+            body[dir=rtl] .hint {
+                right: 2px;
+                left: auto;
+            }
+        </style>
+
+    </form>
+</div>

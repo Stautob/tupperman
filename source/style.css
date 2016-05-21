@@ -1,0 +1,8 @@
+#maindiv {
+    height: 100%;
+}
+#searchfield {
+    position: relative;
+    top: 14px;
+}
+

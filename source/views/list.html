@@ -1,0 +1,84 @@
+<md-button class="md-fab md-fab-bottom-right" href="#/tupper/new">
+    <md-tooltip md-direction="left">
+        Add a new Tupper
+    </md-tooltip>
+    <md-icon md-svg-src="img/icons/ic_add_black_24px.svg" aria-label="Menu Icon"></md-icon>
+</md-button>
+
+<md-toolbar layout="column" class="relative" ng-show="!showSearch">
+    <div class="md-toolbar-tools">
+        <h1>
+            <span>Tupper List</span>
+        </h1>
+        <span flex></span>
+        <md-button aria-label="Search" ng-click="showSearch = !showSearch">
+            <md-icon md-svg-src="img/icons/ic_search_black_24px.svg" aria-label="Search Icon"></md-icon>
+        </md-button>
+        <md-menu md-offset="0 -7">
+            <md-button class="md-icon-button" aria-label="Settings" ng-click="$mdOpenMenu($event)">
+                <md-icon md-svg-src="img/icons/ic_menu_black_24px.svg" aria-label="Menu Icon"></md-icon>
+            </md-button>
+            <md-menu-content width="6">
+                <md-menu-item>
+                    <md-button aria-label="Delete all Tuppers" ng-click="showConfirmDelAll($event)" ><span md-menu-align-target="">Delete all Tuppers</span>
+                    </md-button>
+                </md-menu-item>
+                <md-menu-item>
+                    <md-button aria-label="Options" ng-click="openOptions()"><span
+                            md-menu-align-target="">Options</span>
+                    </md-button>
+                </md-menu-item>
+            </md-menu-content>
+        </md-menu>
+    </div>
+</md-toolbar>
+
+<md-toolbar class="md-hue-1" ng-show="showSearch">
+    <div class="md-toolbar-tools">
+        <h1 flex="10">
+            Search
+        </h1>
+        <md-input-container id="searchfield" flex>
+            <input ng-model="search" placeholder="enter search">
+        </md-input-container>
+        <md-button aria-label="Search" ng-click="showSearch = !showSearch">
+            <md-icon md-svg-src="img/icons/ic_search_black_24px.svg" aria-label="Search Icon"></md-icon>
+        </md-button>
+        <md-button class="md-icon-button" aria-label="Settings">
+            <md-icon md-svg-src="img/icons/ic_menu_black_24px.svg" aria-label="Menu Icon"></md-icon>
+        </md-button>
+    </div>
+</md-toolbar>
+
+<md-content flex md-scroll-y>
+    <ui-view layout="column" layout-fill layout-padding>
+        <md-grid-list md-cols-xs="1" md-cols-sm="2" , md-cols-md="2" md-cols-lg="3" md-cols-xl="4" md-row-height="6:4"
+                      md-gutter-gt-md="16px" md-gutter="8px" md-gutter-gt-sm="4px">
+            <md-grid-tile data-ng-repeat="tupper in  tuppers | filter:search">
+                <md-card layout-fill>
+                    <md-card-title>
+                        <md-card-title-text>
+                            <span class="md-headline">{{tupper.name}}</span>
+                            <span class="md-subhead">{{tupper.foodGroup}}</span>
+                        </md-card-title-text>
+                        <md-card-title-media>
+                            <div class="md-media-md card-media"></div>
+                        </md-card-title-media>
+                    </md-card-title>
+                    <md-card-content>
+                        <p>{{tupper.description}}</p>
+                    </md-card-content>
+                    <md-card-actions layout="row" layout-align="end center">
+                        <md-button href="#/tupper/{{tupper.id}}">
+                            <md-icon md-svg-src="img/icons/ic_mode_edit_black_24px.svg"
+                                     aria-label="Menu Icon"></md-icon>
+                            &nbsp;Edit
+                        </md-button>
+                        <md-button ng-click="emptyTupper(tupper)">Empty</md-button>
+                        <md-button ng-click="removeTupper(tupper.id)">Delete</md-button>
+                    </md-card-actions>
+                </md-card>
+            </md-grid-tile>
+        </md-grid-list>
+    </ui-view>
+</md-content>
