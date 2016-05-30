@@ -59,8 +59,9 @@ function insertTupper(tupper) {
 }
 
 function createTupper(tupper, callback) {
-    if (tupper.id && tupper.name && tupper.description && tupper.foodGroup && tupper.dateOfFreeze) {
+    if (tupper.id) {
         findTupper(tupper.id, function (tu) {
+            console.log("BOOOOOO");
             updateTupper(tupper);
             callback(tupper);
         }, function () {
