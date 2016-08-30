@@ -1,4 +1,4 @@
-<md-button class="md-fab md-fab-bottom-right" href="#/tupper/new">
+<md-button class="md-fab md-primary md-fab-bottom-right fab-color-blue" href="#/tupper/new">
     <md-tooltip md-direction="left">
         Add a new Tupper
     </md-tooltip>
@@ -6,12 +6,12 @@
 </md-button>
 
 <md-toolbar layout="column" class="relative" ng-show="!showSearch">
-    <div class="md-toolbar-tools">
+    <div class="md-toolbar-tools background-blue">
         <h1>
             <span>Tupper List</span>
         </h1>
         <span flex></span>
-        <md-button aria-label="Search" ng-click="showSearch = !showSearch">
+        <md-button aria-label="Search" SearchDirective="openSearch()" ng-click="openSearch()">
             <md-icon md-svg-src="img/icons/ic_search_black_24px.svg" aria-label="Search Icon"></md-icon>
         </md-button>
         <md-menu md-offset="0 -7">
@@ -41,7 +41,7 @@
         <md-input-container id="searchfield" flex>
             <input ng-model="search" placeholder="enter search">
         </md-input-container>
-        <md-button aria-label="Search" ng-click="showSearch = !showSearch">
+        <md-button aria-label="Search" ng-click="openSearch()">
             <md-icon md-svg-src="img/icons/ic_search_black_24px.svg" aria-label="Search Icon"></md-icon>
         </md-button>
         <md-button class="md-icon-button" aria-label="Settings">
@@ -55,7 +55,7 @@
         <md-grid-list md-cols-xs="1" md-cols-sm="2" , md-cols-md="2" md-cols-lg="3" md-cols-xl="4" md-row-height="6:4"
                       md-gutter-gt-md="16px" md-gutter="8px" md-gutter-gt-sm="4px">
             <md-grid-tile data-ng-repeat="tupper in  tuppers | filter:search">
-                <md-card layout-fill>
+                <md-card class="card-stripe-bg" md-theme="default" layout-fill>
                     <md-card-title>
                         <md-card-title-text>
                             <span class="md-headline">{{tupper.name}}</span>

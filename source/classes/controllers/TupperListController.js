@@ -21,6 +21,11 @@ define(['app/models/tupper', 'app/services/StorageService'], function (Tupper, S
             });
         };
 
+        $scope.openSearch = function () {
+            $scope.search = "";
+            $scope.showSearch = !$scope.showSearch;
+        };
+
         $scope.openOptions = function () {
             $location.path('/options');
         };

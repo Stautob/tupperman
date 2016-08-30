@@ -1,8 +1,20 @@
 #maindiv {
-    height: 100%;
-}
-#searchfield {
-    position: relative;
-    top: 14px;
+  height: 100%;
 }
 
+.background-blue {
+  background-color: rgb(31, 55, 187);
+}
+
+#searchfield {
+  position: relative;
+  top: 14px;
+}
+
+.fab-color-blue {
+  background-color: rgb(21, 210, 253);
+}
+
+.card-stripe-bg {
+  background: -webkit-linear-gradient(-45deg, rgba(255,255,255,1) 0%,rgba(243,243,243,1) 50%,rgba(237,237,237,1) 51%,rgba(255,255,255,1) 100%);
+}
