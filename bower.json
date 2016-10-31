@@ -1,0 +1,24 @@
+{
+  "name": "tupperman-frontend",
+  "homepage": "https://github.com/Tupperman/tupperman",
+  "authors": [
+    "Stautob <stautob@stautob.ch>"
+  ],
+  "description": "Angular frontent to Tupperman node server",
+  "main": "index.html",
+  "license": "BSD 3-Clause",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "^1.5.8",
+    "angular-route": "^1.5.8",
+    "angular-material": "^1.1.1",
+    "requirejs": "^2.3.2"
+  }
+}
