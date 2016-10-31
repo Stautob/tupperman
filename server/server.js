@@ -1,41 +1,14 @@
-/**
- * Server configuration
- */
 
-const express = require('express');
+const express    = require('express');
 const bodyParser = require('body-parser');
-const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('tupperman.db');
-const fs = require('fs');
-const favicon = require('express-favicon');
+const app        = express();
+const favicon    = require('express-favicon');
+const Config     = require('./config/config');
 
 
-
-
-db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='Tuppers'",
-    function (err, rows) {
-        if (err !== null) {
-            console.log(err);
-        }
-        else if (rows === undefined) {
-            db.run('CREATE TABLE "Tuppers" ' +
-                '(id STRING PRIMARY KEY, ' +
-                'name VARCHAR(255), ' +
-                'description VARCHAR(255), ' +
-                'foodGroup VARCHAR(255), ' +
-                'dateOfFreeze DATE)', function (err) {
-                if (err !== null) {
-                    console.log(err);
-                }
-                else {
-                    console.log("SQL Table 'Tuppers' initialized.");
-                }
-            });
-        }
-        else {
-            console.log("SQL Table 'Tuppers' already initialized.");
-        }
-    });
+/**
+ * Basic server
+ */
 
 var allowCrossDomain = function (request, response, next) {
     response.header('Access-Control-Allow-Origin', '*');
@@ -44,219 +17,314 @@ var allowCrossDomain = function (request, response, next) {
     next();
 };
 
-
-/**
- * Tupper storage
- */
-
-function insertTupper(tupper) {
-    var sqlRequestInsert = "INSERT INTO 'Tuppers' VALUES('" + tupper.id + "', '" + tupper.name + "', '" + tupper.description + "', '" + tupper.foodGroup + "', '" + tupper.dateOfFreeze + "')";
-    db.run(sqlRequestInsert, function (err) {
-        if (err !== null) {
-            console.log(err);
-        }
-    });
-}
-
-function createTupper(tupper, callback) {
-    if (tupper.id) {
-        findTupper(tupper.id, function (tu) {
-            updateTupper(tupper);
-            callback(tupper);
-        }, function () {
-            insertTupper(tupper);
-            callback(tupper);
-        });
-    } else {
-        return null;
-    }
-}
-
-function updateTupper(tupper) {
-    var sqlRequest = "UPDATE 'Tuppers' SET " +
-        "name = '" + tupper.name + "', " +
-        "description = '" + tupper.description + "', " +
-        "foodGroup = '" + tupper.foodGroup + "', " +
-        "dateOfFreeze = '" + tupper.dateOfFreeze + "' WHERE id = '" + tupper.id + "'";
-    console.log(sqlRequest);
-    db.run(sqlRequest, function (err) {
-        if (err) {
-            console.log(err);
-        }
-    });
-}
-
-function findTupper(id, callback, callnotFound) {
-    var sqlRequest = "SELECT * from Tuppers WHERE id='" + id + "'";
-    db.get(sqlRequest, function (err, row) {
-        if (err) {
-            console.log(err);
-        }
-        else {
-            if (row) {
-                callback(row);
-            } else {
-                callnotFound();
-            }
-        }
-    });
-}
-
-function removeTupper(id, callback, callerror) {
-    findTupper(id, function (tupper) {
-        var sqlRequest = "DELETE FROM Tuppers WHERE id='" + tupper.id + "'";
-        db.run(sqlRequest, function (err) {
-            if (err) {
-                console.log(err);
-            }
-        });
-        getAllTuppers(callback);
-    }, callerror);
-}
-
-function removeAllTuppers() {
-    var sqlRequest = "DELETE FROM Tuppers";
-    db.run(sqlRequest, function (err) {
-        if (err) {
-            console.log(err);
-        }
-    });
-}
-
-function getAllTuppers(callback) {
-    var sqlRequest = "SELECT * from Tuppers";
-    db.all(sqlRequest, function (err, rows) {
-        if (err) {
-            console.log(err);
-        }
-        else {
-            callback(rows);
-        }
-    });
-}
-
-/**
- * Dummy data
- */
-
-// createTupper(
-//     "c85267aa-7522-446a-815a-edec4508db2d",
-//     "Grosses rundes Test Tupper 01 ",
-//     "Reis mit Pouletbrust an Rahmsauce",
-//     "Menu",
-//     new Date('2015-11-15T19:00:00'),
-//     function (tu) {
-//         console.log(tu)
-//     }
-// );
-//
-// createTupper(
-//     "e60ba163-c553-4280-b16b-51303359c8c6",
-//     "Grosses rundes Test Tupper 02 ",
-//     "Tomaten Püree",
-//     "Zutat",
-//     new Date('2016-01-20T19:00:00'),
-//     function (tu) {
-//         console.log(tu)
-//     }
-// );
-
-/**
- * Basic server
- */
-
-var app = express();
 app.use(allowCrossDomain);
+app.set('secret', Config.secret);
+app.set('port', process.env.PORT || 9080);
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
-app.use('/api', express.static(__dirname + '/api'));
-app.use('/', express.static(__dirname + '/../source'));
-// tests, remove this for production
-app.use('/tests', express.static(__dirname + '/../tests'));
-app.use('/source', express.static(__dirname + '/../source'));
-
 app.use(favicon(__dirname + '/public/images/favicon.ico'));
 
 
 /**
- * API routes
+ * ROUTES
  */
 
-// Tuppers
-
-app.get('/api/tuppers', function (request, response) {
-    getAllTuppers(function (tuppers) {
-        response.json({tuppers: tuppers});
-    });
-});
-
-app.delete('/api/tuppers', function (request, response) {
-    removeAllTuppers();
-});
-
-app.get('/api/tuppers/:id', function (request, response) {
-    findTupper(request.params.id,
-        function (tupper) {
-            response.json(tupper);
-        },
-        function () {
-            response.status(404).send('tupper (id ' + request.params.id + ') not found.');
-        }
-    );
-});
-
-app.post('/api/tuppers/:id', function (request, response) {
-    console.log(request.body);
-    createTupper(request.body,
-        function (tupper) {
-            response.json(tupper);
-        }
-    );
-});
-
-app.delete('/api/tuppers/:id', function (request, response) {
-    removeTupper(request.params.id,
-        function (tuppers) {
-            response.json({tuppers: tuppers});
-        },
-        function () {
-            response.status(404).send('tupper (id ' + request.params.id + ') not found.');
-        });
-});
-
-//Options
-
-var foodGroups;
-
-fs.readFile('foodGroups.opt', (err, data) => {
-    if (err) {
-        console.log(err);
-    } else {
-        foodGroups = JSON.parse(data);
-    }
-});
-
-app.get('/api/options', function (request, response) {
-});
-
-app.get('/api/options/foodGroups', function (request, response) {
-    response.json({foodGroups: foodGroups});
-});
-
-app.post('/api/options/foodGroups', function (request, response) {
-    if (request.body) {
-        foodGroups = request.body;
-        fs.writeFile('foodGroups.opt', JSON.stringify(foodGroups), (err) => {
-            console.log(err)
-        });
-        response.json({foodGroups: foodGroups});
-    } else {
-        response.status(404).send('No foodGroups attached.')
-    }
-});
+var Routes = require('./app/routes.js');
 
 /**
- * Server start
+ * STATIC
  */
-var appPort = 9080;
-app.listen(appPort);
-console.log('Server running on port ' + appPort);
+
+app.use('/', express.static(__dirname + '/../source'));
+
+app.use('/api', express.static(__dirname + '/apidoc'));
+
+app.use('/source', express.static(__dirname + '/../source'));
+
+
+/**
+ * API Tuppers
+ */
+
+var apiTupperRouter = express.Router();
+
+apiTupperRouter.use(Routes.validate);
+
+/**
+ * @api {get} /api/tuppers/ Request all Tuppers
+ * @apiVersion 1.0.0
+ * @apiName GetTuppers
+ * @apiGroup Tuppers
+ *
+ * @apiHeader x-access-token JSONWebToken
+ *
+ * @apiSuccess {Tupper[]} tuppers The Tuppers
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     [{"uuid": "123f87e8-7c52-48d6-8f2c-a8eedf029d4d",
+ *       "name": "Sample Tupper",
+ *       "description": "Nice healthy food",
+ *       "foodGroups": "Vegan :-P",
+ *       "weight": 42,
+ *       "freezeDate": "2016-11-11 11:11:11.111 +00:00",
+ *       "expiryDate": "2016-22-11 11:11:11.111 +00:00"},
+ *      {"uuid": "58649822-6543-4cca-beae-c203bcf9c42d",
+ *       "name": "Fancy Tupper",
+ *       "description": "Fancy food",
+ *       "foodGroups": "Fancy-Stuff",
+ *       "weight": 4242,
+ *       "freezeDate": "2016-11-11 11:11:11.111 +00:00",
+ *       "expiryDate": "2016-22-11 11:11:11.111 +00:00"}]
+
+ * @apiError (Error 401) {String} status Failed to authenticate token
+ *
+ * @apiError (Error 401) {String} status No access token provided
+ */
+apiTupperRouter.get('/', Routes.getTuppers);
+
+/**
+ * @api {delete} /api/tuppers/ Delete all Tuppers
+ * @apiVersion 1.0.0
+ * @apiName DeleteTuppers
+ * @apiGroup Tuppers
+ *
+ * @apiHeader x-access-token JSONWebToken
+ *
+ * @apiSuccess {String} status Tuppers deleted
+ *
+ * @apiError (Error 401) {String} status Failed to authenticate token
+ *
+ * @apiError (Error 401) {String} status No access token provided
+ */
+apiTupperRouter.delete('/', Routes.deleteTuppers);
+
+/**
+ * @api {get} /api/tuppers/:uuid Request Tupper
+ * @apiVersion 1.0.0
+ * @apiName GetTupper
+ * @apiGroup Tuppers
+ *
+ * @apiParam {Number} uuid Tupper unique ID
+ * @apiHeader x-access-token JSONWebToken
+ *
+ * @apiSuccess {Object} tupper The Tupper with the unique ID "uuid"
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *      HTTP/1.1 200 OK
+ *      {
+ *       "uuid": "123f87e8-7c52-48d6-8f2c-a8eedf029d4d",
+ *       "name": "Sample Tupper",
+ *       "description": "Nice healthy food",
+ *       "foodGroups": "Vegan :-P",
+ *       "weight": 42,
+ *       "freezeDate": "2016-11-11 11:11:11.111 +00:00",
+ *       "expiryDate": "2016-22-11 11:11:11.111 +00:00"
+ *      }
+ *
+ * @apiError (Error 500) {String} status Tupper (id uuid) not found
+ *
+ * @apiError (Error 401) {String} status Failed to authenticate token
+ *
+ * @apiError (Error 401) {String} status No access token provided
+ */
+apiTupperRouter.get('/:uuid', Routes.getTupper);
+
+/**
+ * @api {post} /api/tuppers/ Create or update Tupper
+ * @apiVersion 1.0.0
+ * @apiName UpdateTupper
+ * @apiGroup Tuppers
+ *
+ * @apiParam {String} uuid Tupper unique ID
+ * @apiParam {String} name Tupper name
+ * @apiParam {String} description Tupper description
+ * @apiParam {String[]} foodGroups Tupper foodGroups
+ * @apiParam {Number} weight Tupper weight (in gramms)
+ * @apiParam {Date} freezeDate Tupper freeze date
+ * @apiParam {Date} expiryDate Tupper expiry date
+ *
+ * @apiHeader x-access-token JSONWebToken.
+ *
+ * @apiSuccess {Object} tupper The created or updated Tupper
+ *
+ * @apiSuccessExample Success-Response:
+ *      HTTP/1.1 200 OK
+ *      {
+ *       "uuid": "123f87e8-7c52-48d6-8f2c-a8eedf029d4d",
+ *       "name": "Sample Tupper",
+ *       "description": "Nice healthy food",
+ *       "foodGroups": "Vegan :-P",
+ *       "weight": 42,
+ *       "freezeDate": "2016-11-11 11:11:11.111 +00:00",
+ *       "expiryDate": "2016-22-11 11:11:11.111 +00:00"
+ *      }
+ *
+ * @apiError (Error 500) {String} status Tupper (id uuid) not found
+ *
+ * @apiError (Error 401) {String} status Failed to authenticate token
+ *
+ * @apiError (Error 401) {String} status No access token provided
+ */
+apiTupperRouter.post('/', Routes.createOrUpdateTupper);
+
+/**
+ * @api {delete} /api/tuppers/:uuid Delete Tupper
+ * @apiVersion 1.0.0
+ * @apiName DeleteTupper
+ * @apiGroup Tuppers
+ *
+ * @apiParam {String} uuid Tupper unique ID
+ *
+ * @apiHeader x-access-token JSONWebToken
+ *
+ * @apiSuccess {Object} tuppers The remaining Tuppers
+ *
+ * @apiError (Error 500) {String} status Tupper (id uuid) not found
+ *
+ * @apiError (Error 401) {String} status Failed to authenticate token
+ *
+ * @apiError (Error 401) {String} status No access token provided
+ */
+apiTupperRouter.delete('/:uuid', Routes.deleteTupper);
+
+app.use('/api/tuppers/', apiTupperRouter);
+
+
+/**
+ * Public API Users
+ */
+
+var apiUsersPublicRouter = express.Router();
+
+/**
+ * @api {post} /api/users/authenticate Authenticate user
+ * @apiVersion 1.0.0
+ * @apiName Authenticate user
+ * @apiGroup Users
+ *
+ * @apiParam {String} email Username (email address) of the User
+ * @apiParam {String} password Password of the User
+ *
+ * @apiSuccess {Object} token The JSONWebToken for authentication
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *      "success": {Boolean},
+ *      "message": {String},
+ *      "token": {String}
+ *     }
+ *
+ * @apiError (Error 401) {Object} status Username or password wrong
+ */
+apiUsersPublicRouter.post('/authenticate', Routes.authenticate);
+
+/**
+ * @api {post} /api/users/create Create user
+ * @apiVersion 1.0.0
+ * @apiName CreateUser
+ * @apiGroup Users
+ *
+ * @apiParam {String} email Username (email address) of the User
+ * @apiParam {String} password Password of the User (Min length 10; min 1 digit, min 1 capital letter, min 1 special character)
+ *
+ * @apiSuccess {Object} status Success
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *      "success": {Boolean},
+ *      "message": {String},
+ *      "token": {String}
+ *     }
+ *
+ * @apiError (Error 500) {Object} status User with this email already exists
+ *
+ * @apiError (Error 500) {Object} status Email does not look like an email address
+ *
+ * @apiError (Error 500) {Object} errors Array that contains the errors in the password
+ */
+apiUsersPublicRouter.post('/create', Routes.createUser);
+
+app.use('/api/users/', apiUsersPublicRouter);
+
+
+/**
+ * Protected API Users
+ */
+
+var apiUsersRouter = express.Router();
+
+apiUsersRouter.use(Routes.validate);
+
+
+/**
+ * @api {post} /api/users/update Update user
+ * @apiVersion 1.0.0
+ * @apiName UpdateUser
+ * @apiGroup Users
+ *
+ * @apiParam {String} password New password (Min length 10; min 1 digit, min 1 capital letter, min 1 special character)
+ *
+ * @apiHeader x-access-token JSONWebToken
+ *
+ * @apiSuccess {Object} status Password successfully updated
+ *
+ * @apiError (Error 401) {String} status No access token provided
+ *
+ * @apiError (Error 401) {String} status Failed to authenticate token
+ *
+ * @apiError (Error 500) {Object} errors Array that contains the errors in the password
+ */
+apiUsersRouter.post('/update', Routes.updateUser);
+
+/**
+ * @api {get} /api/users/foodGroups Get foodGroups
+ * @apiVersion 1.0.0
+ * @apiName GetFoodGroups
+ * @apiGroup Users
+ *
+ * @apiHeader x-access-token JSONWebToken
+ *
+ * @apiSuccess {String[]} foodGroups An array containing the foodGroups
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *      {["Berries",
+ *        "Ice cream",
+ *        "Meat"]}
+ *
+ * @apiError (Error 401) {String} status Failed to authenticate token
+ *
+ * @apiError (Error 401) {String} status No access token provided
+ */
+apiUsersRouter.get('/foodGroups', Routes.getFoodGroups);
+
+/**
+ * @api {get} /api/users/foodGroups Update foodGroups
+ * @apiVersion 1.0.0
+ * @apiName UpdateFoodGroups
+ * @apiGroup Users
+ *
+ * @apiParam {String[]} foodGroups FoodGroups
+ *
+ * @apiHeader x-access-token JSONWebToken
+ *
+ * @apiSuccess {String} status FoodGroups successful updated
+ *
+ * @apiError (Error 401) {String} status Failed to authenticate token
+ *
+ * @apiError (Error 401) {String} status No access token provided
+ */
+apiUsersRouter.post('/foodGroups', Routes.updateFoodGroups);
+
+app.use('/api/users/', apiUsersRouter);
+
+
+/**
+ * Start Server
+ */
+
+app.listen(app.get('port'));
+console.log('Server running on port ' + app.get('port'));
